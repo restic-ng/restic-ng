@@ -1,135 +1,104 @@
-|Documentation| |Build Status| |Build status| |Report Card| |Say Thanks| |Reviewed by Hound|
+About restic-ng
+---------------
 
-Introduction
-------------
+restic-ng is a fork of restic aiming to add some specific features that have shown to be time-intensive to fix.
+Most of these features have been discussed in restic issues and require changes in the repository format.
+As a result restic-ng's repositories will not be compatible with restic repositories. It is however indented to make changes to the repository format in a way that restic repositories can be transformed to restic-ng repositories without much effort.
 
-restic is a backup program that is fast, efficient and secure. It supports the three major operating systems (Linux, macOS, Windows) and a few smaller ones (FreeBSD, OpenBSD).
+The current goal of restic-ng is only to build a restic-based backup tool with the added features. Any other features, bug fixes for bugs within restic etc. are **not** in current the scope of restic-ng.
 
-For detailed usage and installation instructions check out the `documentation <https://restic.readthedocs.io/en/latest>`__.
+Once the goals of restic-ng are reached, we will decide on the future of restic-ng.
 
-You can ask questions in our `Discourse forum <https://forum.restic.net>`__.
+Goals
+-----
 
-Quick start
------------
+The goals of restic-ng are:
 
-Once you've `installed
-<https://restic.readthedocs.io/en/latest/020_installation.html>`__ restic, start
-off with creating a repository for your backups:
+1. Add compression
+2. Support large-scale repositories (many snapshots, many files, large files)
+3. Drop memory consumption
+4. Add possibilities to "import" a restic repository, i.e. to modify a restic repository such that it becomes a restic-ng repository
+5. Add asymmetric encryption
+6. Add locking-free operation
+7. Add possibility to choose crypto, compression, hashing algorithms 
 
-.. code-block:: console
+To Do
+-----
 
-    $ restic init --repo /tmp/backup
-    enter password for new backend:
-    enter password again:
-    created restic backend 085b3c76b9 at /tmp/backup
-    Please note that knowledge of your password is required to access the repository.
-    Losing your password means that your data is irrecoverably lost.
+List of next steps:
 
-and add some data:
+-  [ ] Add compression
 
-.. code-block:: console
+  - [ ] add length and compression type to index  
+  - [ ] update index docu in design document
+  - [ ] add compression to save functions for blobs
+  - [ ] add compression to read functions for blobs
+  - [ ] add compression to save functions for files
+  - [ ] add compression to read functions for files
 
-    $ restic --repo /tmp/backup backup ~/work
-    enter password for repository:
-    scan [/home/user/work]
-    scanned 764 directories, 1816 files in 0:00
-    [0:29] 100.00%  54.732 MiB/s  1.582 GiB / 1.582 GiB  2580 / 2580 items  0 errors  ETA 0:00
-    duration: 0:29, 54.47MiB/s
-    snapshot 40dc1520 saved
+- [ ] Large-scale-repositories 
 
-Next you can either use ``restic restore`` to restore files or use ``restic
-mount`` to mount the repository via fuse and browse the files from previous
-snapshots.
+  - [ ] support many snapshots - make snapshot a blob
+  
+    - [ ] update design document
+    - [ ] add new snapshot blob type
+    - [ ] change snapshot load functions
+    - [ ] change list functions
+    - [ ] change write function
 
-For more options check out the `online documentation <https://restic.readthedocs.io/en/latest/>`__.
+- [ ] Lower memory consumtion
 
-Backends
---------
+  - [ ] refactor index data structure
 
-Saving a backup on the same machine is nice but not a real backup strategy.
-Therefore, restic supports the following backends for storing backups natively:
+- [ ] Add possibilities to "import" a restic repository
 
-- `Local directory <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#local>`__
-- `sftp server (via SSH) <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#sftp>`__
-- `HTTP REST server <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#rest-server>`__ (`protocol <doc/100_references.rst#rest-backend>`__ `rest-server <https://github.com/restic/rest-server>`__)
-- `AWS S3 <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#amazon-s3>`__ (either from Amazon or using the `Minio <https://minio.io>`__ server)
-- `OpenStack Swift <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#openstack-swift>`__
-- `BackBlaze B2 <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#backblaze-b2>`__
-- `Microsoft Azure Blob Storage <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#microsoft-azure-blob-storage>`__
-- `Google Cloud Storage <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#google-cloud-storage>`__
-- And many other services via the `rclone <https://rclone.org>`__ `Backend <https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html#other-services-via-rclone>`__
+  - [ ] add import command
 
-Design Principles
------------------
+- [ ] Add asymmetric encryption
 
-Restic is a program that does backups right and was designed with the
-following principles in mind:
+  - [ ] Add key blobs
+  
+    - [ ] update design document
+    - [ ] add new key blob type
+    - [ ] implement save functionality
+    - [ ] implement load functionality
+    
+  - [ ] Add key-per-blob  
+  
+    - [ ] update design document
+    - [ ] add key to index
+    - [ ] add key functionality to save functions for blobs
+    - [ ] add key functionality to read functions for blobs
+    - [ ] add key functionality to save functions for files
+    - [ ] add key functionality to read functions for files
+    
+  - [ ] Refactor key management
 
--  **Easy:** Doing backups should be a frictionless process, otherwise
-   you might be tempted to skip it. Restic should be easy to configure
-   and use, so that, in the event of a data loss, you can just restore
-   it. Likewise, restoring data should not be complicated.
+- [ ] Add lock-free operation
 
--  **Fast**: Backing up your data with restic should only be limited by
-   your network or hard disk bandwidth so that you can backup your files
-   every day. Nobody does backups if it takes too much time. Restoring
-   backups should only transfer data that is needed for the files that
-   are to be restored, so that this process is also fast.
+  - [ ] Create tomb data structure in repository
+  
+    - [ ] update design document
+    - [ ] add write tomb functionality
+    - [ ] add read tomb functionality
+    
+  - [ ] Update read functions
+  
+    - [ ] delete tomb when reading data already in tomb
+    
+  - [ ] Update delete functions
+  
+    - [ ] implement delete request (put into tomb) functionality
+    - [ ] implement final delete functionality
+    - [ ] implement delete process 
 
--  **Verifiable**: Much more important than backup is restore, so restic
-   enables you to easily verify that all data can be restored.
+- [ ] Add possibility to choose crypto, compression, hashing algorithms 
 
--  **Secure**: Restic uses cryptography to guarantee confidentiality and
-   integrity of your data. The location the backup data is stored is
-   assumed not to be a trusted environment (e.g. a shared space where
-   others like system administrators are able to access your backups).
-   Restic is built to secure your data against such attackers.
-
--  **Efficient**: With the growth of data, additional snapshots should
-   only take the storage of the actual increment. Even more, duplicate
-   data should be de-duplicated before it is actually written to the
-   storage back end to save precious backup space.
-
-Reproducible Builds
--------------------
-
-The binaries released with each restic version starting at 0.6.1 are
-`reproducible <https://reproducible-builds.org/>`__, which means that you can
-easily reproduce a byte identical version from the source code for that
-release. Instructions on how to do that are contained in the
-`builder repository <https://github.com/restic/builder>`__.
-
-News
-----
-
-You can follow the restic project on Twitter `@resticbackup <https://twitter.com/resticbackup>`__ or by subscribing to
-the `development blog <https://restic.net/blog/>`__.
-
-License
--------
-
-Restic is licensed under `BSD 2-Clause License <https://opensource.org/licenses/BSD-2-Clause>`__. You can find the
-complete text in ``LICENSE``.
-
-Sponsorship
------------
-
-Backend integration tests for Google Cloud Storage and Microsoft Azure Blob
-Storage are sponsored by `AppsCode <https://appscode.com>`__!
-
-|AppsCode|
-
-.. |Documentation| image:: https://readthedocs.org/projects/restic/badge/?version=latest
-   :target: https://restic.readthedocs.io/en/latest/?badge=latest
-.. |Build Status| image:: https://travis-ci.com/restic/restic.svg?branch=master
-   :target: https://travis-ci.com/restic/restic
-.. |Build status| image:: https://ci.appveyor.com/api/projects/status/nuy4lfbgfbytw92q/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/fd0/restic/branch/master
-.. |Report Card| image:: https://goreportcard.com/badge/github.com/restic/restic
-   :target: https://goreportcard.com/report/github.com/restic/restic
-.. |Say Thanks| image:: https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg
-   :target: https://saythanks.io/to/restic
-.. |AppsCode| image:: https://cdn.appscode.com/images/logo/appscode/ac-logo-color.png
-   :target: https://appscode.com
-.. |Reviewed by Hound| image:: https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg
-   :target: https://houndci.com
+  - [ ] Data structure
+  
+    - [ ] update design document
+    - [ ] add information to index
+    - [ ] store default values in config
+    - [ ] make interfaces 
+    - [ ] replace existing code to use the interfaces
+    - [ ] add alternative implementations for crypto, compression, hashing
